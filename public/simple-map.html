@@ -1,0 +1,652 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css" />
+    <title>AI 市场模拟 - 地图显示</title>
+    <style>
+        html, body, #container {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .info-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 250px;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+        }
+        
+        .ai-status {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 5px;
+            border-left: 4px solid #00ff00;
+        }
+        
+        .ai-status.trading { border-left-color: #0080ff; }
+        .ai-status.thinking { border-left-color: #8000ff; }
+        .ai-status.idle { border-left-color: #ffff00; }
+        .ai-status.bankrupt { border-left-color: #ff0000; }
+        
+        .building-info {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            min-width: 200px;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 1000;
+            font-family: Arial, sans-serif;
+        }
+        
+        .btn {
+            background: #25A5F7;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .btn:hover {
+            background: #1e8bc3;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 2000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <div class="loading" id="loading">正在加载地图和AI数据...</div>
+    
+    <div class="info-panel">
+        <h3>🤖 AI 代理状态</h3>
+        <div id="aiStatus"></div>
+    </div>
+    
+    <div class="building-info">
+        <h3>🏢 建筑物信息</h3>
+        <div id="buildingInfo">点击建筑物查看详情</div>
+    </div>
+    
+    <div class="controls">
+        <h3>🎮 控制面板</h3>
+        <button class="btn" onclick="startSimulation()">开始模拟</button>
+        <button class="btn" onclick="pauseSimulation()">暂停</button>
+        <button class="btn" onclick="resetSimulation()">重置</button>
+        <br><br>
+        <button class="btn" onclick="focusOnActivity()">查看活动</button>
+        <button class="btn" onclick="toggleBuildingLabels()">切换标签</button>
+    </div>
+
+    <!-- 设置安全密钥 -->
+    <script>
+        window._AMapSecurityConfig = {
+            securityJSCode: 'cea99f47726c5e7712f7b851201866aa'
+        };
+    </script>
+
+    <!-- 加载地图JSAPI脚本 -->
+    <script src="https://webapi.amap.com/maps?v=2.0&key=ef3c3095b51b10259a39ac4216e81f1f"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script>
+        let map;
+        let aiMarkers = [];
+        let buildingMarkers = [];
+        let simulationRunning = false;
+        let showBuildingLabels = true;
+        let socket;
+        let serverUrl = 'http://localhost:3002';
+        
+        // AI 代理数据（将从服务器动态加载）
+        let aiAgents = [
+            {
+                id: 'ai1',
+                name: 'Alex Chen (交易员)',
+                position: [116.397428, 39.90923],
+                status: 'trading',
+                balance: 125000,
+                color: '#00ff00',
+                currentBuilding: 'bank',
+                activity: '正在银行办理大额转账'
+            },
+            {
+                id: 'ai2',
+                name: 'Sarah Kim (分析师)',
+                position: [116.405285, 39.904989],
+                status: 'thinking',
+                balance: 89000,
+                color: '#0080ff',
+                currentBuilding: 'office',
+                activity: '在办公楼分析市场数据'
+            },
+            {
+                id: 'ai3',
+                name: 'David Wang (策略师)',
+                position: [116.395645, 39.913423],
+                status: 'active',
+                balance: 152000,
+                color: '#8000ff',
+                currentBuilding: 'hotel',
+                activity: '在酒店会议室制定投资策略'
+            },
+            {
+                id: 'ai4',
+                name: 'Emily Zhang (观察员)',
+                position: [116.400000, 39.900000],
+                status: 'idle',
+                balance: 73000,
+                color: '#ffff00',
+                currentBuilding: 'mall',
+                activity: '在商场观察消费者行为'
+            }
+        ];
+        
+        // 建筑物数据（将从服务器动态加载）
+        let buildings = [
+            {
+                id: 'bank',
+                name: '中央银行',
+                position: [116.397428, 39.90923],
+                type: 'financial',
+                description: '提供金融服务，AI可在此进行转账、贷款、投资等操作',
+                activities: ['转账', '贷款', '投资', '外汇交易']
+            },
+            {
+                id: 'office',
+                name: '商务办公楼',
+                position: [116.405285, 39.904989],
+                type: 'business',
+                description: '商务办公场所，AI可进行数据分析、会议、决策等',
+                activities: ['数据分析', '商务会议', '策略制定', '报告撰写']
+            },
+            {
+                id: 'hotel',
+                name: '国际酒店',
+                position: [116.395645, 39.913423],
+                type: 'hospitality',
+                description: '高级酒店，AI可在此进行商务洽谈、休息等',
+                activities: ['商务洽谈', '网络会议', '休息调整', '社交活动']
+            },
+            {
+                id: 'mall',
+                name: '购物中心',
+                position: [116.400000, 39.900000],
+                type: 'retail',
+                description: '大型购物中心，AI可观察消费趋势、市场调研',
+                activities: ['市场调研', '消费观察', '趋势分析', '购物体验']
+            },
+            {
+                id: 'exchange',
+                name: '证券交易所',
+                position: [116.410000, 39.920000],
+                type: 'financial',
+                description: '证券交易所，AI进行股票交易的主要场所',
+                activities: ['股票交易', '期货交易', '市场监控', '风险评估']
+            }
+        ];
+        
+        // 初始化Socket.IO连接
+        function initSocket() {
+            socket = io(serverUrl);
+            
+            socket.on('connect', () => {
+                console.log('Connected to server');
+                loadBuildingsFromServer();
+                loadAIDataFromServer();
+            });
+            
+            socket.on('aiEnterBuilding', (data) => {
+                console.log('AI entered building:', data);
+                updateAIStatus();
+            });
+            
+            socket.on('aiLeaveBuilding', (data) => {
+                console.log('AI left building:', data);
+                updateAIStatus();
+            });
+            
+            socket.on('aiStartActivity', (data) => {
+                console.log('AI started activity:', data);
+                updateAIStatus();
+            });
+            
+            socket.on('aiCompleteActivity', (data) => {
+                console.log('AI completed activity:', data);
+                updateAIStatus();
+            });
+            
+            socket.on('aiStartMovement', (data) => {
+                console.log('AI started movement:', data);
+                updateAIStatus();
+            });
+            
+            socket.on('aiArriveBuilding', (data) => {
+                console.log('AI arrived at building:', data);
+                updateAIStatus();
+            });
+        }
+        
+        // 从服务器加载建筑物数据
+        async function loadBuildingsFromServer() {
+            try {
+                const response = await fetch(`${serverUrl}/api/buildings`);
+                const result = await response.json();
+                if (result.success) {
+                    // 更新建筑物数据
+                    buildings.length = 0;
+                    buildings.push(...result.data);
+                    console.log('Loaded buildings from server:', buildings);
+                    if (map) {
+                        initBuildings();
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load buildings from server:', error);
+            }
+        }
+        
+        // 从服务器加载AI数据
+        async function loadAIDataFromServer() {
+            try {
+                // 这里可以根据需要从服务器获取AI数据
+                // 暂时使用模拟数据
+                console.log('Using simulated AI data');
+                if (map) {
+                    initAIAgents();
+                }
+            } catch (error) {
+                console.error('Failed to load AI data from server:', error);
+            }
+        }
+        
+        // 初始化地图
+        function initMap() {
+            document.getElementById('loading').style.display = 'block';
+            
+            map = new AMap.Map('container', {
+                viewMode: '2D',
+                zoom: 14,
+                center: [116.397428, 39.90923],
+                mapStyle: 'amap://styles/dark' // 暗色主题
+            });
+            
+            // 地图加载完成后的处理
+            map.on('complete', function() {
+                document.getElementById('loading').style.display = 'none';
+                console.log('地图加载完成');
+                
+                // 初始化Socket连接
+                initSocket();
+            });
+            
+            // 点击地图事件
+            map.on('click', function(e) {
+                console.log('点击位置:', e.lnglat.getLng(), e.lnglat.getLat());
+            });
+        }
+        
+        // 初始化建筑物标记
+        function initBuildings() {
+            buildings.forEach(building => {
+                // 创建建筑物标记
+                const marker = new AMap.Marker({
+                    position: building.position,
+                    title: building.name,
+                    content: createBuildingMarkerContent(building),
+                    offset: new AMap.Pixel(-12, -12)
+                });
+                
+                // 添加点击事件
+                marker.on('click', function() {
+                    showBuildingInfo(building);
+                });
+                
+                map.add(marker);
+                buildingMarkers.push(marker);
+                
+                // 添加建筑物标签
+                if (showBuildingLabels) {
+                    const label = new AMap.Text({
+                        text: building.name,
+                        position: building.position,
+                        offset: new AMap.Pixel(0, -40),
+                        style: {
+                            'background-color': 'rgba(0,0,0,0.8)',
+                            'border': '1px solid #ccc',
+                            'color': 'white',
+                            'font-size': '12px',
+                            'padding': '4px 8px',
+                            'border-radius': '4px'
+                        }
+                    });
+                    map.add(label);
+                }
+            });
+        }
+        
+        // 创建建筑物标记内容
+        function createBuildingMarkerContent(building) {
+            const icons = {
+                'financial': '🏦',
+                'business': '🏢',
+                'hospitality': '🏨',
+                'retail': '🏬'
+            };
+            
+            return `<div style="
+                width: 24px; 
+                height: 24px; 
+                background: rgba(0,0,0,0.8); 
+                border: 2px solid #fff;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                cursor: pointer;
+            ">${icons[building.type] || '🏢'}</div>`;
+        }
+        
+        // 初始化AI代理
+        function initAIAgents() {
+            aiAgents.forEach(agent => {
+                const marker = new AMap.Marker({
+                    position: agent.position,
+                    title: agent.name,
+                    content: createAIMarkerContent(agent),
+                    offset: new AMap.Pixel(-15, -15)
+                });
+                
+                // 添加点击事件
+                marker.on('click', function() {
+                    showAIInfo(agent);
+                });
+                
+                map.add(marker);
+                aiMarkers.push({ marker, agent });
+                
+                // 添加活动范围圆圈
+                const circle = new AMap.Circle({
+                    center: agent.position,
+                    radius: 100,
+                    strokeColor: agent.color,
+                    strokeOpacity: 0.5,
+                    strokeWeight: 2,
+                    fillColor: agent.color,
+                    fillOpacity: 0.1
+                });
+                map.add(circle);
+            });
+        }
+        
+        // 创建AI标记内容
+        function createAIMarkerContent(agent) {
+            const statusIcons = {
+                'active': '🟢',
+                'trading': '🔵',
+                'thinking': '🟣',
+                'idle': '🟡',
+                'bankrupt': '🔴'
+            };
+            
+            return `<div style="
+                width: 30px; 
+                height: 30px; 
+                background: ${agent.color}; 
+                border: 3px solid #fff;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.5);
+                cursor: pointer;
+                animation: pulse 2s infinite;
+            ">${statusIcons[agent.status] || '🤖'}</div>`;
+        }
+        
+        // 更新AI状态面板
+        function updateAIStatus() {
+            const statusDiv = document.getElementById('aiStatus');
+            statusDiv.innerHTML = aiAgents.map(agent => `
+                <div class="ai-status ${agent.status}">
+                    <strong>${agent.name}</strong><br>
+                    状态: ${getStatusText(agent.status)}<br>
+                    余额: ¥${agent.balance.toLocaleString()}<br>
+                    位置: ${getBuildingName(agent.currentBuilding)}<br>
+                    活动: ${agent.activity}
+                </div>
+            `).join('');
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const statusMap = {
+                'active': '活跃',
+                'trading': '交易中',
+                'thinking': '思考中',
+                'idle': '空闲',
+                'bankrupt': '破产'
+            };
+            return statusMap[status] || '未知';
+        }
+        
+        // 获取建筑物名称
+        function getBuildingName(buildingId) {
+            const building = buildings.find(b => b.id === buildingId);
+            return building ? building.name : '未知位置';
+        }
+        
+        // 显示建筑物信息
+        function showBuildingInfo(building) {
+            const infoDiv = document.getElementById('buildingInfo');
+            const aiInBuilding = aiAgents.filter(agent => agent.currentBuilding === building.id);
+            
+            infoDiv.innerHTML = `
+                <h4>${building.name}</h4>
+                <p><strong>类型:</strong> ${building.type}</p>
+                <p><strong>描述:</strong> ${building.description}</p>
+                <p><strong>可用活动:</strong> ${building.activities.join(', ')}</p>
+                <p><strong>当前AI:</strong> ${aiInBuilding.length > 0 ? aiInBuilding.map(a => a.name).join(', ') : '无'}</p>
+            `;
+        }
+        
+        // 显示AI信息
+        function showAIInfo(agent) {
+            const building = buildings.find(b => b.id === agent.currentBuilding);
+            const infoWindow = new AMap.InfoWindow({
+                content: `
+                    <div style="padding: 10px; min-width: 200px;">
+                        <h3>${agent.name}</h3>
+                        <p><strong>状态:</strong> ${getStatusText(agent.status)}</p>
+                        <p><strong>余额:</strong> ¥${agent.balance.toLocaleString()}</p>
+                        <p><strong>当前位置:</strong> ${building ? building.name : '未知'}</p>
+                        <p><strong>当前活动:</strong> ${agent.activity}</p>
+                        <p><strong>位置坐标:</strong> ${agent.position[0].toFixed(6)}, ${agent.position[1].toFixed(6)}</p>
+                    </div>
+                `,
+                offset: new AMap.Pixel(0, -30)
+            });
+            infoWindow.open(map, agent.position);
+        }
+        
+        // 模拟控制函数
+        function startSimulation() {
+            simulationRunning = true;
+            console.log('开始模拟');
+            
+            // 通过API启动模拟
+            fetch(`${serverUrl}/api/simulation/start`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Simulation started:', data);
+            })
+            .catch(error => {
+                console.error('Failed to start simulation:', error);
+            });
+        }
+        
+        function pauseSimulation() {
+            simulationRunning = false;
+            console.log('暂停模拟');
+            
+            // 通过API暂停模拟
+            fetch(`${serverUrl}/api/simulation/pause`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Simulation paused:', data);
+            })
+            .catch(error => {
+                console.error('Failed to pause simulation:', error);
+            });
+        }
+        
+        function resetSimulation() {
+            simulationRunning = false;
+            console.log('重置模拟');
+            
+            // 通过API重置模拟
+            fetch(`${serverUrl}/api/simulation/reset`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Simulation reset:', data);
+                // 重置AI状态
+                aiAgents.forEach(agent => {
+                    agent.status = 'idle';
+                    agent.balance = 100000;
+                });
+                updateAIStatus();
+            })
+            .catch(error => {
+                console.error('Failed to reset simulation:', error);
+            });
+        }
+        
+        // 模拟AI活动
+        function simulateAIActivity() {
+            if (!simulationRunning) return;
+            
+            aiAgents.forEach(agent => {
+                // 随机改变状态
+                const statuses = ['active', 'trading', 'thinking', 'idle'];
+                agent.status = statuses[Math.floor(Math.random() * statuses.length)];
+                
+                // 随机改变余额
+                agent.balance += Math.floor((Math.random() - 0.5) * 10000);
+                agent.balance = Math.max(0, agent.balance);
+                
+                // 随机改变活动
+                const building = buildings.find(b => b.id === agent.currentBuilding);
+                if (building) {
+                    agent.activity = building.activities[Math.floor(Math.random() * building.activities.length)];
+                }
+            });
+            
+            updateAIStatus();
+        }
+        
+        // 聚焦到活动
+        function focusOnActivity() {
+            const activeAgent = aiAgents.find(agent => agent.status === 'trading' || agent.status === 'active');
+            if (activeAgent) {
+                map.setCenter(activeAgent.position);
+                map.setZoom(16);
+                showAIInfo(activeAgent);
+            }
+        }
+        
+        // 切换建筑物标签
+        function toggleBuildingLabels() {
+            showBuildingLabels = !showBuildingLabels;
+            // 重新初始化建筑物（简单实现）
+            map.clearMap();
+            initBuildings();
+            initAIAgents();
+        }
+        
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // 初始化地图
+        initMap();
+        
+        // 定期更新AI状态
+        setInterval(async () => {
+            if (socket && socket.connected) {
+                try {
+                    const response = await fetch(`${serverUrl}/api/statistics`);
+                    const result = await response.json();
+                    if (result.success) {
+                        // 更新统计信息
+                        console.log('Statistics updated:', result.data);
+                    }
+                } catch (error) {
+                    console.error('Failed to update statistics:', error);
+                }
+            }
+        }, 5000);
+        
+    </script>
+</body>
+</html>

@@ -8,6 +8,7 @@ import { AIManager } from './ai/AIManager';
 import { AIManager as MoonshotAIManager } from './services/AIManager';
 import dotenv from 'dotenv';
 import amapProxy from './routes/amapProxy';
+import { buildingService } from './services/BuildingService';
 
 // Load environment variables
 dotenv.config();
@@ -27,6 +28,57 @@ app.use(express.urlencoded({ extended: true }));
 // AMap proxy service for secure API key handling
 app.use('/_AMapService', amapProxy);
 
+// Building service routes
+app.get('/api/buildings', (req, res) => {
+  const buildings = buildingService.getBuildings();
+  res.json({ success: true, data: buildings });
+});
+
+app.get('/api/buildings/:id', (req, res) => {
+  const building = buildingService.getBuilding(req.params.id);
+  if (!building) {
+    return res.status(404).json({ success: false, error: 'Building not found' });
+  }
+  res.json({ success: true, data: building });
+});
+
+app.post('/api/buildings/:buildingId/enter/:aiId', (req, res) => {
+  const { buildingId, aiId } = req.params;
+  const success = buildingService.enterBuilding(aiId, buildingId);
+  res.json({ success, message: success ? 'AI entered building' : 'Failed to enter building' });
+});
+
+app.post('/api/buildings/:buildingId/leave/:aiId', (req, res) => {
+  const { buildingId, aiId } = req.params;
+  const success = buildingService.leaveBuilding(aiId, buildingId);
+  res.json({ success, message: success ? 'AI left building' : 'Failed to leave building' });
+});
+
+app.post('/api/buildings/:buildingId/activity', (req, res) => {
+  const { buildingId } = req.params;
+  const { aiId, activity } = req.body;
+  const activityId = buildingService.startActivity(aiId, buildingId, activity);
+  res.json({ success: !!activityId, activityId, message: activityId ? 'Activity started' : 'Failed to start activity' });
+});
+
+app.get('/api/ai/:aiId/location', (req, res) => {
+  const { aiId } = req.params;
+  const buildingId = buildingService.getAICurrentBuilding(aiId);
+  const building = buildingId ? buildingService.getBuilding(buildingId) : null;
+  res.json({ success: true, data: { buildingId, building } });
+});
+
+app.get('/api/ai/:aiId/activities', (req, res) => {
+  const { aiId } = req.params;
+  const activities = buildingService.getAIActivities(aiId);
+  res.json({ success: true, data: activities });
+});
+
+app.get('/api/statistics', (req, res) => {
+  const stats = buildingService.getStatistics();
+  res.json({ success: true, data: stats });
+});
+
 // Socket.IO setup
 const io = new SocketIOServer(httpServer, {
   cors: {
@@ -34,6 +86,31 @@ const io = new SocketIOServer(httpServer, {
     methods: ['GET', 'POST'],
     credentials: true
   }
+});
+
+// Initialize building service events
+buildingService.on('aiEnterBuilding', (data) => {
+  io.emit('aiEnterBuilding', data);
+});
+
+buildingService.on('aiLeaveBuilding', (data) => {
+  io.emit('aiLeaveBuilding', data);
+});
+
+buildingService.on('aiStartActivity', (data) => {
+  io.emit('aiStartActivity', data);
+});
+
+buildingService.on('aiCompleteActivity', (data) => {
+  io.emit('aiCompleteActivity', data);
+});
+
+buildingService.on('aiStartMovement', (data) => {
+  io.emit('aiStartMovement', data);
+});
+
+buildingService.on('aiArriveBuilding', (data) => {
+  io.emit('aiArriveBuilding', data);
 });
 
 // MongoDB connection
@@ -197,6 +274,23 @@ async function initializeGameSession() {
         console.log('🤖 Spawning default AIs...');
         await aiManager.spawnDefaultAIs(3);
       }
+      
+      // Initialize AI positions in buildings
+      setTimeout(() => {
+        console.log('🏢 Initializing AI positions in buildings...');
+        buildingService.enterBuilding('trader-001', 'central-bank');
+        buildingService.enterBuilding('analyst-002', 'business-tower');
+        buildingService.enterBuilding('strategist-003', 'grand-hotel');
+        buildingService.enterBuilding('observer-004', 'shopping-mall');
+        
+        // Start some initial activities
+        setTimeout(() => {
+          buildingService.startActivity('trader-001', 'central-bank', '大额转账');
+          buildingService.startActivity('analyst-002', 'business-tower', '数据分析');
+          buildingService.startActivity('strategist-003', 'grand-hotel', '商务洽谈');
+          buildingService.startActivity('observer-004', 'shopping-mall', '市场调研');
+        }, 2000);
+      }, 1000);
     }, 2000);
     
     console.log('🎮 Game session initialized successfully');
@@ -213,7 +307,9 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
     aiManager: aiManager ? 'Active' : 'Inactive',
-    moonshotAIManager: moonshotAIManager ? 'Active' : 'Inactive'
+    moonshotAIManager: moonshotAIManager ? 'Active' : 'Inactive',
+    buildingService: 'Active',
+    buildingStats: buildingService.getStatistics()
   });
 });
 
