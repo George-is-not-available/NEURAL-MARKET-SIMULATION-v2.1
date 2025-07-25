@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { MoonshotThought, MoonshotAgentResponse, MoonshotDecision } from '../types/moonshot';
 
 export interface AIMessage {
   id: string;
@@ -64,6 +65,11 @@ class SocketService {
   private positionCallbacks: ((position: AIPosition) => void)[] = [];
   private financialCallbacks: ((financial: FinancialUpdate) => void)[] = [];
   private gameStateCallbacks: ((gameState: GameState) => void)[] = [];
+  
+  // Moonshot AI callbacks
+  private moonshotThoughtCallbacks: ((thought: MoonshotThought) => void)[] = [];
+  private moonshotAgentResponseCallbacks: ((response: MoonshotAgentResponse) => void)[] = [];
+  private moonshotDecisionCallbacks: ((decision: MoonshotDecision) => void)[] = [];
 
   connect(): Promise<boolean> {
     return new Promise((resolve, reject) => {
@@ -143,6 +149,19 @@ class SocketService {
     this.socket.on('game-state-broadcast', (data: GameState) => {
       this.gameStateCallbacks.forEach(callback => callback(data));
     });
+
+    // Moonshot AI events
+    this.socket.on('thoughtGenerated', (data: MoonshotThought) => {
+      this.moonshotThoughtCallbacks.forEach(callback => callback(data));
+    });
+
+    this.socket.on('agentResponse', (data: MoonshotAgentResponse) => {
+      this.moonshotAgentResponseCallbacks.forEach(callback => callback(data));
+    });
+
+    this.socket.on('decisionMade', (data: MoonshotDecision) => {
+      this.moonshotDecisionCallbacks.forEach(callback => callback(data));
+    });
   }
 
   // Event subscription methods
@@ -183,6 +202,31 @@ class SocketService {
     return () => {
       const index = this.gameStateCallbacks.indexOf(callback);
       if (index > -1) this.gameStateCallbacks.splice(index, 1);
+    };
+  }
+
+  // Moonshot AI event subscription methods
+  onMoonshotThought(callback: (thought: MoonshotThought) => void) {
+    this.moonshotThoughtCallbacks.push(callback);
+    return () => {
+      const index = this.moonshotThoughtCallbacks.indexOf(callback);
+      if (index > -1) this.moonshotThoughtCallbacks.splice(index, 1);
+    };
+  }
+
+  onMoonshotAgentResponse(callback: (response: MoonshotAgentResponse) => void) {
+    this.moonshotAgentResponseCallbacks.push(callback);
+    return () => {
+      const index = this.moonshotAgentResponseCallbacks.indexOf(callback);
+      if (index > -1) this.moonshotAgentResponseCallbacks.splice(index, 1);
+    };
+  }
+
+  onMoonshotDecision(callback: (decision: MoonshotDecision) => void) {
+    this.moonshotDecisionCallbacks.push(callback);
+    return () => {
+      const index = this.moonshotDecisionCallbacks.indexOf(callback);
+      if (index > -1) this.moonshotDecisionCallbacks.splice(index, 1);
     };
   }
 
@@ -250,6 +294,42 @@ class SocketService {
     }
   }
 
+  // Moonshot AI methods
+  sendMoonshotMessage(agentId: string, message: string) {
+    if (this.socket?.connected) {
+      this.socket.emit('moonshot-message', { agentId, message });
+    }
+  }
+
+  requestMoonshotDecision(agentId: string, scenario: string, options: string[]) {
+    if (this.socket?.connected) {
+      this.socket.emit('moonshot-decision', { agentId, scenario, options });
+    }
+  }
+
+  // API methods for Moonshot AI
+  async getMoonshotAgents(): Promise<any> {
+    try {
+      const response = await fetch('/api/moonshot/agents');
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error('Failed to fetch Moonshot agents:', error);
+      return null;
+    }
+  }
+
+  async getMoonshotStats(): Promise<any> {
+    try {
+      const response = await fetch('/api/moonshot/stats');
+      const data = await response.json();
+      return data.success ? data.data : null;
+    } catch (error) {
+      console.error('Failed to fetch Moonshot stats:', error);
+      return null;
+    }
+  }
+
   disconnect() {
     if (this.socket) {
       this.socket.disconnect();
@@ -262,6 +342,11 @@ class SocketService {
     this.positionCallbacks = [];
     this.financialCallbacks = [];
     this.gameStateCallbacks = [];
+    
+    // Clear Moonshot AI callbacks
+    this.moonshotThoughtCallbacks = [];
+    this.moonshotAgentResponseCallbacks = [];
+    this.moonshotDecisionCallbacks = [];
   }
 
   isConnected(): boolean {
@@ -273,6 +358,13 @@ class SocketService {
     if (this.socket.connected) return 'connected';
     if (this.reconnectAttempts > 0 && this.reconnectAttempts < this.maxReconnectAttempts) return 'reconnecting';
     return 'connecting';
+  }
+
+  // Clear all Moonshot AI callbacks
+  clearMoonshotCallbacks() {
+    this.moonshotThoughtCallbacks = [];
+    this.moonshotAgentResponseCallbacks = [];
+    this.moonshotDecisionCallbacks = [];
   }
 }
 

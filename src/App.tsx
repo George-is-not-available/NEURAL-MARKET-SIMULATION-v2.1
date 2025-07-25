@@ -4,6 +4,8 @@ import { Navigation } from './components/Navigation';
 import { DashboardPage } from './pages/DashboardPage';
 import { ChatMonitoringPage } from './pages/ChatMonitoringPage';
 import { ThoughtMonitoringPage } from './pages/ThoughtMonitoringPage';
+import { ConnectionStatus, LoadingInterface } from './components/ConnectionStatus';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { useSocketConnection } from './hooks/useSocket';
 import './App.css';
 import './App.layout.css';
@@ -11,15 +13,36 @@ import './App.layout.css';
 function App() {
   const { connectionStatus, isConnected } = useSocketConnection();
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isLoading, setIsLoading] = useState(true);
+  const [isConnecting, setIsConnecting] = useState(false);
   
   useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+  
+  useEffect(() => {
+    // Simulate initial loading
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+    
+    return () => clearTimeout(loadingTimer);
+  }, []);
+  
+  useEffect(() => {
+    setIsConnecting(connectionStatus === 'connecting');
+  }, [connectionStatus]);
 
   return (
     <Router>
+      <LoadingInterface isVisible={isLoading} isDarkMode={false} />
       <div className="app-container">
+        <ConnectionStatus 
+          isConnected={isConnected} 
+          isConnecting={isConnecting} 
+          showText={true} 
+        />
         {/* Background effects */}
         <div className="bg-effect bg-grid"></div>
         <div className="bg-effect bg-gradient-overlay"></div>
@@ -70,11 +93,13 @@ function App() {
         {/* Main content */}
         <main className="main-content">
           <div className="content-container">
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/chat-monitor" element={<ChatMonitoringPage />} />
-            <Route path="/thought-monitor" element={<ThoughtMonitoringPage />} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/chat-monitor" element={<ChatMonitoringPage />} />
+              <Route path="/thought-monitor" element={<ThoughtMonitoringPage />} />
+            </Routes>
+          </ErrorBoundary>
           </div>
         </main>
 

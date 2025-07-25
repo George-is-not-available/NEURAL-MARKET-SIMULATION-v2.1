@@ -66,3 +66,38 @@ Thumbs.db
 # Temporary folders
 tmp/
 temp/
+
+# Clacky-related configuration
+.clackyai/
+*.1024
+.environments.yaml
+
+# Additional TypeScript/React specific files
+*.tsbuildinfo
+.eslintcache
+
+# React build output
+build/
+
+# Storybook build outputs
+storybook-static/
+
+# Debug logs
+debug.log
+
+# Package manager lock files (keep only one)
+# yarn.lock
+# pnpm-lock.yaml
+
+# Webpack bundle analyzer
+bundle-report.html
+
+# Editor configurations
+*.swp
+*.swo
+*~
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
