@@ -1,0 +1,266 @@
+/* PageHeader.css - 页面头部样式 */
+
+.page-header {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.page-header-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg,
+    rgba(56, 189, 248, 0.05) 0%,
+    transparent 25%,
+    rgba(168, 85, 247, 0.05) 100%
+  );
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.page-header-bg::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent,
+    rgba(56, 189, 248, 0.3),
+    rgba(168, 85, 247, 0.3),
+    transparent
+  );
+  top: 0;
+  animation: glow 4s linear infinite;
+}
+
+@keyframes glow {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+.page-header-container {
+  position: relative;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+/* 图标容器 */
+.icon-container {
+  position: relative;
+  width: 4rem;
+  height: 4rem;
+  background: linear-gradient(135deg,
+    rgba(56, 189, 248, 0.2) 0%,
+    rgba(59, 130, 246, 0.2) 100%
+  );
+  border-radius: 0.75rem;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.icon-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 1px;
+  background: linear-gradient(to right,
+    transparent,
+    rgba(56, 189, 248, 0.8),
+    transparent
+  );
+  animation: scan 3s linear infinite;
+}
+
+@keyframes scan {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(100%); }
+}
+
+/* 标题文字样式 */
+.page-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  background: linear-gradient(to right,
+    #ffffff 0%,
+    #a5f3fc 50%,
+    #bfdbfe 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  letter-spacing: 0.02em;
+}
+
+.page-subtitle {
+  color: rgba(56, 189, 248, 0.8);
+  font-family: monospace;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  letter-spacing: 0.1em;
+}
+
+/* 数字时钟样式 */
+.digital-time {
+  font-family: monospace;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.digital-date {
+  font-family: monospace;
+  font-size: 0.75rem;
+  color: rgba(156, 163, 175, 1);
+  letter-spacing: 0.05em;
+}
+
+/* 连接状态样式 */
+.connection-indicator {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+.connection-online {
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+}
+
+.connection-offline {
+  background: #ef4444;
+  box-shadow: 0 0 10px #ef4444;
+}
+
+.connection-label {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.connection-online-text {
+  color: #10b981;
+  text-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+}
+
+.connection-offline-text {
+  color: #ef4444;
+  text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+}
+
+/* 系统指标样式 */
+.system-metric {
+  text-align: center;
+  position: relative;
+  padding: 0.5rem 0.75rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.metric-label {
+  font-family: monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.cpu-label {
+  color: #3b82f6;
+  text-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+}
+
+.memory-label {
+  color: #10b981;
+  text-shadow: 0 0 5px rgba(16, 185, 129, 0.5);
+}
+
+.network-label {
+  color: #8b5cf6;
+  text-shadow: 0 0 5px rgba(139, 92, 246, 0.5);
+}
+
+.metric-value {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+/* 角落装饰 */
+.corner-decoration {
+  position: absolute;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-color: rgba(56, 189, 248, 0.5);
+}
+
+.corner-top-right {
+  top: 0.5rem;
+  right: 0.5rem;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-style: solid;
+}
+
+.corner-bottom-left {
+  bottom: 0.5rem;
+  left: 0.5rem;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+  border-style: solid;
+}
+
+/* 面包屑导航 */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.breadcrumb-item {
+  color: rgba(156, 163, 175, 1);
+}
+
+.breadcrumb-separator {
+  color: rgba(56, 189, 248, 1);
+}
+
+.breadcrumb-current {
+  color: #ffffff;
+}
+
+/* 节点指示器 */
+.node-indicator {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  width: 1rem;
+  height: 1rem;
+  background: linear-gradient(135deg, #10b981, #34d399);
+  border-radius: 50%;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(0.8);
+  }
+} 

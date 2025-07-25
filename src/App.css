@@ -1,0 +1,137 @@
+/* Base styles */
+:root {
+  --primary: #38bdf8;
+  --secondary: #818cf8;
+  --success: #4ade80;
+  --danger: #fb7185;
+  --warning: #facc15;
+  --info: #22d3ee;
+  --dark: #0f172a;
+  --light: #f8fafc;
+  --accent: #8b5cf6;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html {
+  font-family: 'Roboto', sans-serif;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  color: var(--light);
+}
+
+/* Grid background effect */
+.bg-grid-cyan {
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.1) 1px, transparent 1px);
+  background-size: 30px 30px;
+  }
+
+/* Card styles */
+.card {
+  @apply bg-black/40 backdrop-blur-lg border border-cyan-900/50 rounded-lg overflow-hidden;
+}
+
+.card-header {
+  @apply bg-cyan-900/20 px-4 py-2 border-b border-cyan-900/30;
+}
+
+.card-body {
+  @apply p-4;
+}
+
+/* Button styles */
+.btn {
+  @apply px-4 py-2 rounded-md font-medium transition-all duration-200 transform hover:-translate-y-0.5;
+}
+
+.btn-primary {
+  @apply bg-cyan-500 text-white hover:bg-cyan-600 focus:ring-2 focus:ring-cyan-300;
+}
+
+.btn-secondary {
+  @apply bg-indigo-500 text-white hover:bg-indigo-600 focus:ring-2 focus:ring-indigo-300;
+}
+
+.btn-outline {
+  @apply border border-cyan-500 text-cyan-400 hover:bg-cyan-500/20;
+}
+
+/* Badge styles */
+.badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium;
+}
+
+.badge-success {
+  @apply bg-green-100 text-green-800;
+}
+
+.badge-danger {
+  @apply bg-red-100 text-red-800;
+}
+
+.badge-warning {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+/* Animation utilities */
+.animate-pulse {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-pulse.delay-1000 {
+  animation-delay: 1s;
+}
+
+.animate-pulse.delay-2000 {
+  animation-delay: 2s;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.5);
+  border-radius: 4px;
+  }
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.8);
+}
+
+/* Graph visualization styles */
+.node circle {
+  fill: var(--primary);
+  stroke: var(--dark);
+  stroke-width: 2px;
+}
+
+.node text {
+  font-size: 12px;
+  fill: var(--light);
+}
+
+.link {
+  stroke: rgba(56, 189, 248, 0.5);
+  stroke-width: 1px;
+}

@@ -1,0 +1,277 @@
+/* App.layout.css - 全局布局优化 */
+
+/* 主容器样式 */
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, 
+    #0f172a 0%, 
+    #0c0e14 40%, 
+    #111827 75%, 
+    #0c1a33 100%
+  );
+  position: relative;
+  overflow: hidden;
+  color: #e2e8f0;
+}
+
+/* 布局网格 */
+.layout-grid {
+  display: grid;
+  width: 100%;
+  max-width: 1920px;
+  margin: 0 auto;
+  grid-template-columns: repeat(12, 1fr);
+  grid-gap: 1rem;
+  padding: 0 1.5rem;
+}
+
+/* 媒体查询，适应不同的屏幕大小 */
+@media (max-width: 1536px) {
+  .layout-grid {
+    max-width: 1280px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .layout-grid {
+    grid-template-columns: repeat(8, 1fr);
+    max-width: 1024px;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout-grid {
+    grid-template-columns: repeat(4, 1fr);
+    padding: 0 1rem;
+  }
+}
+
+/* 背景效果 */
+.bg-effect {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-grid {
+  background-image: 
+    linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.2;
+}
+
+.bg-gradient-overlay {
+  background: linear-gradient(to top,
+    rgba(0, 0, 0, 0.5) 0%,
+    transparent 100%
+  );
+}
+
+/* 动态光效 */
+.bg-light {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.1;
+  animation: pulse 8s ease-in-out infinite alternate;
+}
+
+.bg-light-1 {
+  top: 25%;
+  left: 25%;
+  width: 30vw;
+  height: 30vw;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.4) 0%, rgba(56, 189, 248, 0.1) 70%);
+}
+
+.bg-light-2 {
+  bottom: 25%;
+  right: 25%;
+  width: 30vw;
+  height: 30vw;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0.1) 70%);
+  animation-delay: 2s;
+}
+
+.bg-light-3 {
+  top: 50%;
+  left: 50%;
+  width: 20vw;
+  height: 20vw;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, rgba(59, 130, 246, 0.1) 70%);
+  transform: translate(-50%, -50%);
+  animation-delay: 4s;
+}
+
+/* 顶部状态栏 */
+.status-bar {
+  position: relative;
+  z-index: 10;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.status-bar-container {
+  max-width: 1920px;
+  margin: 0 auto;
+  padding: 0.75rem 1.5rem;
+}
+
+/* 导航区域 */
+.nav-section {
+  position: relative;
+  z-index: 10;
+  padding: 1rem 0;
+}
+
+/* 主内容区域 */
+.main-content {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 2rem;
+}
+
+/* 内容区域容器 */
+.content-container {
+  max-width: 1920px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 1.5rem;
+}
+
+/* 卡片区域布局 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.card-grid-span-full {
+  grid-column: span 12;
+}
+
+.card-grid-span-8 {
+  grid-column: span 8;
+}
+
+.card-grid-span-6 {
+  grid-column: span 6;
+}
+
+.card-grid-span-4 {
+  grid-column: span 4;
+}
+
+.card-grid-span-3 {
+  grid-column: span 3;
+}
+
+@media (max-width: 1280px) {
+  .card-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+  
+  .card-grid-span-8 {
+    grid-column: span 8;
+  }
+  
+  .card-grid-span-4 {
+    grid-column: span 4;
+  }
+  
+  .card-grid-span-3 {
+    grid-column: span 4;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .card-grid-span-8,
+  .card-grid-span-6,
+  .card-grid-span-4,
+  .card-grid-span-3 {
+    grid-column: span 4;
+  }
+}
+
+/* 信息提示卡片布局 */
+.info-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1280px) {
+  .info-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .info-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 页面标题下的内容边距 */
+.page-content {
+  padding-top: 1rem;
+}
+
+/* 应用页脚 */
+.app-footer {
+  position: relative;
+  z-index: 10;
+  border-top: 1px solid rgba(56, 189, 248, 0.1);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem 0;
+  margin-top: auto;
+}
+
+/* 立体阴影效果 */
+.shadow-neon {
+  box-shadow: 
+    0 10px 15px -3px rgba(0, 0, 0, 0.2),
+    0 4px 6px -4px rgba(0, 0, 0, 0.2),
+    0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.5);
+}
+
+/* 鼠标选择文本的颜色 */
+::selection {
+  background: rgba(56, 189, 248, 0.3);
+  color: #fff;
+} 

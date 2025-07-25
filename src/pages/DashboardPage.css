@@ -1,0 +1,351 @@
+/* DashboardPage.css - 主页专用样式 */
+
+.dashboard-container {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* 3D Card Effects */
+.card-3d {
+  transition: all 0.3s ease;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.card-3d:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 195, 255, 0.1);
+}
+
+/* Card Hover Effects */
+.dashboard-card {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.dashboard-card:hover {
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+}
+
+.dashboard-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(56, 189, 248, 0.05) 50%,
+    transparent 100%
+  );
+  transition: left 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+  pointer-events: none;
+}
+
+.dashboard-card:hover::before {
+  left: 100%;
+}
+
+/* Custom Scrollbar for Dashboard */
+.dashboard-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.3);
+  border-radius: 10px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.5);
+  border-radius: 10px;
+}
+
+.dashboard-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.8);
+}
+
+/* Glowing Border */
+.glow-border {
+  box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+  animation: glowing 2s infinite alternate;
+}
+
+@keyframes glowing {
+  0% {
+    box-shadow: 0 0 5px rgba(56, 189, 248, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.7);
+  }
+}
+
+/* Neon Text Effect */
+.neon-text {
+  text-shadow: 
+    0 0 5px rgba(56, 189, 248, 0.7),
+    0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+/* Futuristic Button */
+.btn-cyberpunk {
+  position: relative;
+  background: linear-gradient(to right, #0f172a, #1e293b);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #38bdf8;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.btn-cyberpunk::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0%;
+  height: 100%;
+  background: rgba(56, 189, 248, 0.2);
+  transition: all 0.3s ease;
+  z-index: -1;
+}
+
+.btn-cyberpunk:hover::before {
+  width: 100%;
+}
+
+.btn-cyberpunk:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.5);
+}
+
+/* Holographic Display */
+.holographic {
+  position: relative;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  backdrop-filter: blur(5px);
+  background: linear-gradient(135deg, 
+    rgba(56, 189, 248, 0.05) 0%,
+    rgba(15, 23, 42, 0.3) 50%,
+    rgba(56, 189, 248, 0.05) 100%
+  );
+}
+
+.holographic::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent,
+    rgba(56, 189, 248, 0.05),
+    transparent
+  );
+  background-size: 200% 200%;
+  animation: hologram 5s ease infinite;
+  pointer-events: none;
+}
+
+@keyframes hologram {
+  0% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+  100% { background-position: 0% 0%; }
+}
+
+/* Data Points Animation */
+.data-point {
+  width: 2px;
+  height: 2px;
+  background-color: rgba(56, 189, 248, 0.7);
+  border-radius: 50%;
+  position: absolute;
+  animation: dataFlow 3s infinite linear;
+  opacity: 0;
+}
+
+@keyframes dataFlow {
+  0% {
+    transform: translateY(0) scale(0);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Digital Clock Style */
+.digital-clock {
+  font-family: monospace;
+  font-weight: bold;
+  color: #38bdf8;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 5px rgba(56, 189, 248, 0.5);
+}
+
+/* Glass Morphism */
+.glassmorphism {
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(56, 189, 248, 0.18);
+}
+
+/* Progress Bar Animation */
+.progress-bar {
+  position: relative;
+  height: 6px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-value {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(to right, #38bdf8, #818cf8);
+  border-radius: 6px;
+  animation: progress 2s ease-in-out;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+}
+
+/* Status Indicator */
+.status-indicator {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.status-active {
+  background-color: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  animation: pulse 2s infinite;
+}
+
+.status-warning {
+  background-color: #facc15;
+  box-shadow: 0 0 8px #facc15;
+  animation: pulse 2s infinite;
+}
+
+.status-error {
+  background-color: #fb7185;
+  box-shadow: 0 0 8px #fb7185;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+/* Blinking Cursor */
+.blinking-cursor {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  from, to {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Matrix Rain Background */
+.matrix-background {
+  position: relative;
+  overflow: hidden;
+}
+
+.matrix-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(0deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Card Title Underline Animation */
+.title-underline {
+  position: relative;
+  display: inline-block;
+}
+
+.title-underline::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(to right, #38bdf8, transparent);
+  transition: width 0.3s ease;
+}
+
+.title-underline:hover::after {
+  width: 100%;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Data visualization grid */
+.data-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(30px, 1fr));
+  gap: 3px;
+}
+
+.data-grid-item {
+  height: 30px;
+  background-color: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.data-grid-item:hover {
+  background-color: rgba(56, 189, 248, 0.3);
+  transform: scale(1.1);
+} 
